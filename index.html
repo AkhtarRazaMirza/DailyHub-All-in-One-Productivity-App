@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Track habits, expenses, and boost productivity with Pomodoro timer">
+    <title>DailyHub - Your Productivity Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+</head>
+
+<body>
+    <header class="top-bar">
+        <div class="header-content">
+            <div>
+                <h1 class="logo">📊 DailyHub</h1>
+            </div>
+            <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode">🌙</button>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="time-display">
+            <h2 id="date" class="date-text"></h2>
+            <h1 id="time" class="time-text"></h1>
+        </div>
+    </section>
+
+    <nav class="nav-tabs" role="navigation" aria-label="Main navigation">
+        <button class="tab-btn active" data-tab="dashboard" aria-selected="true" role="tab">📊 Dashboard</button>
+        <button class="tab-btn" data-tab="analytics" aria-selected="false" role="tab">📈 Analytics</button>
+        <button class="tab-btn" data-tab="notes" aria-selected="false" role="tab">📝 Notes</button>
+    </nav>
+
+    <main class="main-container">
+        <div id="dashboard-tab" class="tab-content active">
+            <div class="grid">
+                <!-- To-Do List -->
+                <section class="card todo-card">
+                    <div class="card-header">
+                        <h3>✓ To-Do List</h3>
+                        <span class="card-info">Organize tasks</span>
+                    </div>
+                    <div class="input-group">
+                        <input id="todoInput" type="text" placeholder="Add a new task..." maxlength="80">
+                        <select id="todoPriority" aria-label="Task priority">
+                            <option value="low">🟢 Low</option>
+                            <option value="medium" selected>🟡 Medium</option>
+                            <option value="high">🔴 High</option>
+                        </select>
+                        <button id="addTodo" class="btn-primary">Add Task</button>
+                    </div>
+                    <div class="todo-filters">
+                        <button class="todo-filter-btn active" data-filter="all">All</button>
+                        <button class="todo-filter-btn" data-filter="active">Active</button>
+                        <button class="todo-filter-btn" data-filter="completed">Completed</button>
+                    </div>
+                    <ul id="todoList" class="todo-list"></ul>
+                    <div class="todo-stats">
+                        <span id="todoCount">0 tasks</span>
+                    </div>
+                </section>
+
+                <!-- Bookmarks -->
+                <section class="card bookmark-card">
+                    <div class="card-header">
+                        <h3>🔖 Bookmark Manager</h3>
+                        <span class="card-info">Save links</span>
+                    </div>
+                    <div class="bookmark-form">
+                        <input id="bookmarkTitle" type="text" placeholder="Bookmark title" maxlength="50" />
+                        <input id="bookmarkUrl" type="url" placeholder="https://example.com" />
+                        <select id="bookmarkCategory">
+                            <option value="General">📌 General</option>
+                            <option value="Work">💼 Work</option>
+                            <option value="Learning">📚 Learning</option>
+                            <option value="Entertainment">🎬 Entertainment</option>
+                            <option value="Tools">🛠️ Tools</option>
+                            <option value="Reference">📖 Reference</option>
+                        </select>
+                        <button id="addBookmark" class="btn-primary">Add Bookmark</button>
+                    </div>
+                    <div id="bookmarksList" class="bookmarks-list"></div>
+                </section>
+
+                <!-- Projects -->
+                <section class="card project-card">
+                    <div class="card-header">
+                        <h3>📁 Project Manager</h3>
+                        <span class="card-info">Track projects</span>
+                    </div>
+                    <div class="project-form">
+                        <input id="projectName" type="text" placeholder="Project name" maxlength="50" />
+                        <textarea id="projectDesc" placeholder="Project description..." maxlength="200"
+                            rows="2"></textarea>
+                        <select id="projectStatus">
+                            <option value="Planning">🔵 Planning</option>
+                            <option value="In Progress">🟡 In Progress</option>
+                            <option value="On Hold">🔴 On Hold</option>
+                            <option value="Completed">✅ Completed</option>
+                        </select>
+                        <input id="projectDeadline" type="date" />
+                        <button id="addProject" class="btn-primary">Create Project</button>
+                    </div>
+                    <div class="project-filters">
+                        <button class="project-filter-btn active" data-status="all">All</button>
+                        <button class="project-filter-btn" data-status="Planning">Planning</button>
+                        <button class="project-filter-btn" data-status="In Progress">In Progress</button>
+                        <button class="project-filter-btn" data-status="Completed">Completed</button>
+                    </div>
+                    <div id="projectsList" class="projects-list"></div>
+                </section>
+
+                <!-- Expenses -->
+                <section class="card expense-card">
+                    <div class="card-header">
+                        <h3>💰 Expense Tracker</h3>
+                        <span class="card-info">Manage spending</span>
+                    </div>
+                    <div class="expense-form">
+                        <input id="expenseName" type="text" placeholder="What did you buy?" maxlength="50" />
+                        <div class="form-row">
+                            <input id="expenseAmount" type="number" placeholder="Amount ₹" min="0" step="0.01" />
+                            <select id="expenseCategory">
+                                <option value="Food">🍽️ Food</option>
+                                <option value="Travel">🚗 Travel</option>
+                                <option value="Bills">📄 Bills</option>
+                                <option value="Entertainment">🎬 Entertainment</option>
+                                <option value="Shopping">🛍️ Shopping</option>
+                                <option value="Other">📌 Other</option>
+                            </select>
+                        </div>
+                        <button id="addExpense" class="btn-primary">Add Expense</button>
+                    </div>
+                    <div class="expense-stats">
+                        <p id="totalExpense" class="total-text"></p>
+                        <button id="clearExpenses" class="btn-secondary" title="Clear all expenses">Clear All</button>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="expenseChart"></canvas>
+                    </div>
+                </section>
+
+                <!-- Pomodoro Timer -->
+                <section class="card pomodoro-card center">
+                    <div class="card-header">
+                        <h3>⏱️ Pomodoro Timer</h3>
+                        <span class="card-info">Stay focused</span>
+                    </div>
+                    <div class="pomodoro-display">
+                        <h1 id="pomoTime" class="pomo-time">25:00</h1>
+                        <p id="pomoStatus" class="pomo-status">Ready to focus</p>
+                    </div>
+                    <div class="pomodoro-controls">
+                        <button id="startPomo" class="btn-primary">Start</button>
+                        <button id="pausePomo" class="btn-secondary" disabled>Pause</button>
+                        <button id="resetPomo" class="btn-danger">Reset</button>
+                    </div>
+                    <div class="pomo-settings">
+                        <label>Work: <input id="workDuration" type="number" min="1" max="60" value="25" class="input-number-compact"> min</label>
+                        <label>Break: <input id="breakDuration" type="number" min="1" max="30" value="5" class="input-number-compact"> min</label>
+                    </div>
+                </section>
+
+                <!-- Daily Goals -->
+                <section class="card goals-card">
+                    <div class="card-header">
+                        <h3>🎯 Today's Goals</h3>
+                        <span class="card-info">Focus on 3 goals</span>
+                    </div>
+                    <div class="input-group">
+                        <input id="goalInput" type="text" placeholder="Add a goal..." maxlength="80" />
+                        <button id="addGoal" class="btn-primary">Add Goal</button>
+                    </div>
+                    <ul id="goalsList" class="goals-list"></ul>
+                    <div class="goals-progress">
+                        <div class="progress-bar">
+                            <div id="goalsProgressBar" class="progress-fill"></div>
+                        </div>
+                        <span id="goalsPercentage">0%</span>
+                    </div>
+                </section>
+
+                <!-- Water Intake Tracker -->
+                <section class="card water-card">
+                    <div class="card-header">
+                        <h3>💧 Water Intake</h3>
+                        <span class="card-info">Stay hydrated</span>
+                    </div>
+                    <div class="water-display">
+                        <span class="water-amount" id="waterCups">0</span>
+                        <span class="water-label">/ 8 cups</span>
+                    </div>
+                    <div class="water-controls">
+                        <button id="addWater" class="btn-primary">+1 Cup</button>
+                        <button id="resetWater" class="btn-secondary">Reset</button>
+                    </div>
+                    <div class="water-progress">
+                        <div class="progress-bar">
+                            <div id="waterProgressBar" class="progress-fill"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Time Tracker -->
+                <section class="card time-tracker-card">
+                    <div class="card-header">
+                        <h3>⏱️ Time Tracker</h3>
+                        <span class="card-info">Track activities</span>
+                    </div>
+                    <div class="input-group">
+                        <input id="activityInput" type="text" placeholder="Activity name..." maxlength="50" />
+                        <button id="startActivity" class="btn-primary">Start</button>
+                    </div>
+                    <div id="timerDisplay" class="timer-display">
+                        <span id="currentActivity" class="current-activity">No activity</span>
+                        <h2 id="timerTime" class="timer-time">00:00:00</h2>
+                        <button id="stopActivity" class="btn-secondary btn-full-width">Stop Activity</button>
+                    </div>
+                    <ul id="activitiesList" class="activities-list"></ul>
+                </section>
+
+                <!-- Weather Forecast -->
+                <section class="card weather-card">
+                    <div class="card-header">
+                        <h3>🌤️ Weather Forecast</h3>
+                        <span class="card-info">Local weather</span>
+                    </div>
+                    <div class="weather-location">
+                        <input id="weatherCity" type="text" placeholder="Enter city name..." maxlength="50" />
+                        <button id="searchWeather" class="btn-primary">Search</button>
+                    </div>
+                    <div id="weatherContent" class="weather-content">
+                        <p class="weather-loading">Loading weather data...</p>
+                    </div>
+                    <div id="forecastContainer" class="forecast-container"></div>
+                </section>
+
+                <!-- Reading List -->
+                <section class="card reading-card">
+                    <div class="card-header">
+                        <h3>📚 Reading List</h3>
+                        <span class="card-info">Track your reading</span>
+                    </div>
+                    <div class="input-group">
+                        <input id="bookTitle" type="text" placeholder="Book title..." maxlength="60" />
+                        <input id="bookAuthor" type="text" placeholder="Author..." maxlength="50" />
+                        <button id="addBook" class="btn-primary">Add Book</button>
+                    </div>
+                    <ul id="booksList" class="books-list"></ul>
+                </section>
+
+                <!-- Important Dates Reminder -->
+                <section class="card dates-card">
+                    <div class="card-header">
+                        <h3>📅 Important Dates</h3>
+                        <span class="card-info">Never forget</span>
+                    </div>
+                    <div class="input-group">
+                        <input id="dateName" type="text" placeholder="Event name..." maxlength="50" />
+                        <input id="dateInput" type="date" />
+                        <button id="addDate" class="btn-primary">Add Date</button>
+                    </div>
+                    <ul id="datesList" class="dates-list"></ul>
+                </section>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analytics-tab" class="tab-content">
+            <div class="analytics-grid">
+                <section class="analytics-card">
+                    <h3>📊 Task Overview</h3>
+                    <div class="stat-display">
+                        <div class="stat-item">
+                            <span class="stat-label">Total Tasks</span>
+                            <span class="stat-value" id="totalTasksCount">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Completed</span>
+                            <span class="stat-value completed" id="completedTasksCount">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Completion Rate</span>
+                            <span class="stat-value accent" id="taskCompletionRate">0%</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar-large">
+                        <div class="progress-fill" id="taskProgressFill"></div>
+                    </div>
+                </section>
+
+                <section class="analytics-card">
+                    <h3>💰 Expense Summary</h3>
+                    <div class="stat-display">
+                        <div class="stat-item">
+                            <span class="stat-label">Total Spent</span>
+                            <span class="stat-value" id="totalSpent">₹0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Avg/Day</span>
+                            <span class="stat-value" id="avgExpense">₹0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Categories</span>
+                            <span class="stat-value" id="categoryCount">0</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="analytics-card">
+                    <h3>🔥 Habit Stats</h3>
+                    <div class="stat-display">
+                        <div class="stat-item">
+                            <span class="stat-label">Total Habits</span>
+                            <span class="stat-value" id="totalHabits">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Longest Streak</span>
+                            <span class="stat-value success" id="longestStreak">0 days</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Total Days</span>
+                            <span class="stat-value" id="totalHabitDays">0</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="analytics-card">
+                    <h3>📁 Project Status</h3>
+                    <div class="project-status-grid">
+                        <div class="status-item">
+                            <span class="status-label">Planning</span>
+                            <span class="status-count" id="planningCount">0</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">In Progress</span>
+                            <span class="status-count" id="inProgressCount">0</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">On Hold</span>
+                            <span class="status-count" id="onHoldCount">0</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Completed</span>
+                            <span class="status-count" id="completedCount">0</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Notes Tab -->
+        <div id="notes-tab" class="tab-content">
+            <div class="grid">
+                <section class="card notes-card">
+                    <div class="card-header">
+                        <h3>📝 Quick Notes</h3>
+                        <span class="card-info">Save ideas</span>
+                    </div>
+                    <div class="notes-form">
+                        <input id="noteTitle" type="text" placeholder="Note title..." maxlength="60" />
+                        <textarea id="noteContent" placeholder="Write your note here..." maxlength="500"
+                            rows="4"></textarea>
+                        <button id="addNote" class="btn-primary">Save Note</button>
+                    </div>
+                    <div class="notes-list-container">
+                        <div id="notesList" class="notes-list"></div>
+                    </div>
+                </section>
+
+                <section class="card quotes-card">
+                    <div class="card-header">
+                        <h3>✨ Daily Inspiration</h3>
+                        <span class="card-info">Motivation</span>
+                    </div>
+                    <div class="quote-display">
+                        <p id="quoteText" class="quote-text">"The only way to do great work is to love what you do." –
+                            Steve Jobs</p>
+                        <p id="quoteAuthor" class="quote-author">Steve Jobs</p>
+                    </div>
+                    <div class="quote-controls">
+                        <button id="newQuoteBtn" class="btn-secondary">New Quote</button>
+                        <button id="favoriteQuoteBtn" class="btn-secondary">♥ Favorite</button>
+                    </div>
+                    <div id="favoriteQuotes" class="favorite-quotes"></div>
+                </section>
+
+                <section class="card weather-card">
+                    <div class="card-header">
+                        <h3>🌤️ Quick Stats</h3>
+                        <span class="card-info">Daily summary</span>
+                    </div>
+                    <div class="quick-stats">
+                        <div class="quick-stat">
+                            <span class="stat-emoji">☀️</span>
+                            <span class="stat-label">Productivity</span>
+                            <span class="stat-number" id="productivityScore">0%</span>
+                        </div>
+                        <div class="quick-stat">
+                            <span class="stat-emoji">⚡</span>
+                            <span class="stat-label">Focus Time</span>
+                            <span class="stat-number" id="focusTime">0m</span>
+                        </div>
+                        <div class="quick-stat">
+                            <span class="stat-emoji">🎯</span>
+                            <span class="stat-label">Streak</span>
+                            <span class="stat-number" id="currentStreak">0</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2025 Productivity Dashboard | Made with ❤️ for better productivity</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
