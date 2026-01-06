@@ -232,7 +232,14 @@
                         <button id="searchWeather" class="btn-primary">Search</button>
                     </div>
                     <div id="weatherContent" class="weather-content">
-                        <p class="weather-loading">Loading weather data...</p>
+                        <div class="weather-main">
+                            <span id="weatherIcon" class="weather-icon">🌤️</span>
+                            <div class="weather-info">
+                                <h2 id="weatherTemp">--°/--°</h2>
+                                <p id="weatherDesc" class="weather-description">Loading...</p>
+                            </div>
+                        </div>
+                        <div id="weatherLocation" class="weather-location-text">Detecting location...</div>
                     </div>
                     <div id="forecastContainer" class="forecast-container"></div>
                 </section>
@@ -387,7 +394,7 @@
                     <div id="favoriteQuotes" class="favorite-quotes"></div>
                 </section>
 
-                <section class="card weather-card">
+                <section class="card stats-card">
                     <div class="card-header">
                         <h3>🌤️ Quick Stats</h3>
                         <span class="card-info">Daily summary</span>

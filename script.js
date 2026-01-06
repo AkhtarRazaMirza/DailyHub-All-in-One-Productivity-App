@@ -1488,7 +1488,7 @@ function setupThemeToggle() {
 
 // WEATHER MANAGER (unchanged core functionality)
 const WeatherManager = {
-  baseUrl: 'https://geocoding-api.open-meteo.com/v1',
+  baseUrl: 'https://geocoding-api.open-meteo.com/v1/search',
   weatherUrl: 'https://api.open-meteo.com/v1/forecast',
 
   init() {
@@ -1530,8 +1530,11 @@ const WeatherManager = {
     const weatherContent = document.getElementById('weatherContent');
     weatherContent.innerHTML = '<p class="weather-loading">🔄 Searching for city...</p>';
 
-    fetch(`${this.baseUrl}/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`)
-      .then(response => response.json())
+    fetch(`${this.baseUrl}?name=${encodeURIComponent(city)}&count=1&language=en&format=json`)
+      .then(response => {
+        if (!response.ok) throw new Error(`API Error: ${response.status}`);
+        return response.json();
+      })
       .then(data => {
         if (!data.results || data.results.length === 0) {
           throw new Error('City not found');
@@ -1541,27 +1544,67 @@ const WeatherManager = {
       })
       .catch(error => {
         Utils.showToast('City not found', 'error');
+        weatherContent.innerHTML = '<p class="weather-error">❌ Unable to find city</p>';
       });
   },
 
   fetchWeatherByCoords(lat, lon, cityName = null, country = null) {
     fetch(`${this.weatherUrl}?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`)
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) throw new Error(`Weather API Error: ${response.status}`);
+        return response.json();
+      })
       .then(data => {
+        const weatherContent = document.getElementById('weatherContent');
+        const locationEl = document.getElementById('weatherLocation');
+        
         if (cityName && country) {
-          document.getElementById('weatherLocation').textContent = `${cityName}, ${country}`;
+          locationEl.textContent = `📍 ${cityName}, ${country}`;
         }
+        
         const todayCode = data.daily.weathercode[0];
         const todayDesc = this.getWeatherDescription(todayCode);
         const todayTempMax = data.daily.temperature_2m_max[0];
         const todayTempMin = data.daily.temperature_2m_min[0];
-        document.getElementById('weatherIcon').innerHTML = todayDesc.icon;
+        
+        document.getElementById('weatherIcon').textContent = todayDesc.icon;
         document.getElementById('weatherDesc').textContent = todayDesc.text;
         document.getElementById('weatherTemp').textContent = `${todayTempMax.toFixed(1)}° / ${todayTempMin.toFixed(1)}°`;
+        
+        this.renderForecast(data.daily);
+        Utils.showToast('Weather loaded successfully', 'success');
       })
       .catch(error => {
-        Utils.showToast('Unable to fetch weather', 'error');
+        Utils.showToast('Unable to fetch weather data', 'error');
+        document.getElementById('weatherContent').innerHTML = '<p class="weather-error">❌ Failed to load weather</p>';
       });
+  },
+
+  renderForecast(daily) {
+    const forecastContainer = document.getElementById('forecastContainer');
+    if (!forecastContainer) return;
+    
+    forecastContainer.innerHTML = '';
+    const limit = Math.min(5, daily.time.length);
+    
+    for (let i = 1; i <= limit; i++) {
+      const date = new Date(daily.time[i]);
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+      const code = daily.weathercode[i];
+      const desc = this.getWeatherDescription(code);
+      const maxTemp = daily.temperature_2m_max[i];
+      const minTemp = daily.temperature_2m_min[i];
+      
+      const forecastItem = document.createElement('div');
+      forecastItem.className = 'forecast-day';
+      forecastItem.innerHTML = `
+        <div class="forecast-date">${dayName}</div>
+        <span class="forecast-icon">${desc.icon}</span>
+        <div class="forecast-temp">${maxTemp.toFixed(0)}°</div>
+        <div class="forecast-desc">${desc.text}</div>
+      `;
+      forecastContainer.appendChild(forecastItem);
+    }
   },
 
   getWeatherDescription(code) {
@@ -1571,20 +1614,20 @@ const WeatherManager = {
       2: { icon: '⛅', text: 'Cloudy' },
       3: { icon: '☁️', text: 'Overcast' },
       45: { icon: '🌫️', text: 'Fog' },
-      48: { icon: '🌫️', text: 'Depositing rime fog' },
-      51: { icon: '🌦️', text: 'Light drizzle' },
-      53: { icon: '🌦️', text: 'Moderate drizzle' },
-      55: { icon: '🌦️', text: 'Dense drizzle' },
-      61: { icon: '🌧️', text: 'Light rain' },
+      48: { icon: '🌫️', text: 'Fog' },
+      51: { icon: '🌦️', text: 'Drizzle' },
+      53: { icon: '🌦️', text: 'Drizzle' },
+      55: { icon: '🌦️', text: 'Drizzle' },
+      61: { icon: '🌧️', text: 'Rain' },
       63: { icon: '🌧️', text: 'Rain' },
-      65: { icon: '🌧️', text: 'Heavy rain' },
-      71: { icon: '🌨️', text: 'Light snow' },
+      65: { icon: '🌧️', text: 'Rain' },
+      71: { icon: '🌨️', text: 'Snow' },
       73: { icon: '🌨️', text: 'Snow' },
-      75: { icon: '🌨️', text: 'Heavy snow' },
+      75: { icon: '🌨️', text: 'Snow' },
       80: { icon: '🌦️', text: 'Showers' },
-      81: { icon: '🌧️', text: 'Heavy showers' },
-      95: { icon: '⛈️', text: 'Thunderstorm' },
-      99: { icon: '🌩️', text: 'Heavy thunderstorm' },
+      81: { icon: '🌧️', text: 'Showers' },
+      95: { icon: '⛈️', text: 'Storm' },
+      99: { icon: '🌩️', text: 'Storm' },
     };
     return weatherMap[code] || { icon: '❓', text: 'Unknown' };
   }
